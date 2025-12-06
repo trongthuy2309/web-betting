@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FunBet — Nòng Nọc vs Tiến Bry</title>
+  <style>
+    :root{--bg:#0f172a;--card:#0b1220;--muted:#94a3b8;--accent:#7c3aed;--win:#16a34a;--lose:#ef4444}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,Helvetica,Arial;background:linear-gradient(180deg,#071029 0%, #071830 60%);color:#e6eef8}
+    .container{max-width:980px;margin:36px auto;padding:20px}
+    header{display:flex;align-items:center;gap:16px}
+    .logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700}
+    h1{font-size:20px;margin:0}
+    p.lead{color:var(--muted);margin:4px 0 0}
+
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:20px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+
+    .match{display:flex;flex-direction:column;gap:12px}
+    .contestants{display:flex;align-items:center;justify-content:space-between}
+    .player{display:flex;align-items:center;gap:12px}
+    .avatar{width:72px;height:72px;border-radius:12px;background:linear-gradient(135deg,#1e293b,#0ea5a9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+    .name{font-weight:600}
+    .odds{background:#051027;padding:6px 10px;border-radius:8px;color:var(--muted)}
+
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{background:var(--accent);padding:10px 14px;border-radius:10px;border:0;color:white;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+
+    .bet-panel{display:flex;flex-direction:column;gap:8px}
+    input[type=number]{width:140px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+
+    .side{display:flex;flex-direction:column;gap:12px}
+    .balance{font-size:14px;color:var(--muted)}
+    .history{max-height:220px;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
+    .h-item{display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));font-size:13px}
+
+    .result{padding:12px;border-radius:10px;text-align:center}
+    .toast{position:fixed;right:20px;bottom:20px;padding:10px 14px;border-radius:10px;background:#0b1220}
+
+    footer{color:var(--muted);font-size:13px;margin-top:18px}
+
+    @media (max-width:880px){.grid{grid-template-columns:1fr}.avatar{width:56px;height:56px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">FB</div>
+      <div>
+        <h1>FunBet — Nòng Nọc vs Tiến Bry</h1>
+        <p class="lead">CƯỢC ĐẤU MÕM. Dùng "Play Credits" để tham gia.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <main class="card">
+        <section class="match">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong>CƯỢC ĐẤU MÕM</strong>
+              <div style="color:var(--muted);font-size:13px">Bắt đầu trong: <span id="timer">00:10:00</span></div>
+            </div>
+            <div class="controls">
+              <button class="btn" id="startRound">Bắt đầu ngay</button>
+              <button class="btn ghost" id="resetBtn">Đặt lại</button>
+            </div>
+          </div>
+
+          <div class="contestants">
+            <div class="player">
+              <div class="avatar" id="avatarA">NN</div>
+              <div>
+                <div class="name">Nòng Nọc</div>
+                <div style="font-size:13px;color:var(--muted)">Thành tích vui: <span id="statA">12W - 7L</span></div>
+              </div>
+            </div>
+
+            <div class="odds" id="oddsA">1.80</div>
+          </div>
+
+          <div style="height:1px;background:linear-gradient(90deg,transparent,#1f2937,transparent);margin:10px 0"></div>
+
+          <div class="contestants">
+            <div class="odds" id="oddsB">2.05</div>
+            <div class="player">
+              <div class="avatar" id="avatarB">TB</div>
+              <div>
+                <div class="name">Tiến Bry</div>
+                <div style="font-size:13px;color:var(--muted)">Thành tích vui: <span id="statB">9W - 10L</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:10px;align-items:center">
+            <div class="bet-panel">
+              <label style="font-size:13px;color:var(--muted)">Số điểm cược (Play Credits)</label>
+              <input type="number" id="betAmount" value="50" min="1" step="1" />
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="betA">Cược Nòng Nọc</button>
+              <button class="btn" id="betB">Cược Tiến Bry</button>
+            </div>
+          </div>
+
+          <div id="liveArea" style="margin-top:14px"></div>
+
+        </section>
+      </main>
+
+      <aside class="side">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:14px;font-weight:600">Tài khoản của bạn</div>
+              <div class="balance">ID: <strong>guest123</strong></div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:22px;font-weight:700"><span id="balance">1000</span></div>
+              <div style="font-size:12px;color:var(--muted)">Play Credits</div>
+            </div>
+          </div>
+
+          <div style="height:1px;background:rgba(255,255,255,0.02);margin:12px 0"></div>
+
+          <div style="display:flex;gap:8px">
+            <button class="btn ghost" id="addCredits">Nạp +100</button>
+            <button class="btn ghost" id="withdraw">Rút 0</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:8px">Lịch sử cược</div>
+          <div class="history" id="history">
+            <!-- items appended here -->
+          </div>
+        </div>
+
+        <div class="card result" id="resultCard">
+          <div style="font-weight:700">Kết quả</div>
+          <div id="resultText" style="margin-top:8px;color:var(--muted)">Chưa có kết quả</div>
+        </div>
+
+      </aside>
+    </div>
+
+    <footer>
+      Lưu ý: Đây là trang dùng Play Credits, không dùng tiền mặt. Sử dụng có trách nhiệm và chỉ để cược.
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" style="display:none"></div>
+
+  <script>
+    // Light-weight front-end logic for demo purposes
+    const balanceEl = document.getElementById('balance');
+    const historyEl = document.getElementById('history');
+    const resultText = document.getElementById('resultText');
+    const toast = document.getElementById('toast');
+
+    let balance = 1000;
+    let roundOpen = true;
+    let oddsA = 1.8;
+    let oddsB = 2.05;
+
+    function showToast(t){ toast.innerText = t; toast.style.display = 'block'; setTimeout(()=>toast.style.display='none',2500)}
+
+    function renderOdds(){
+      document.getElementById('oddsA').innerText = oddsA.toFixed(2);
+      document.getElementById('oddsB').innerText = oddsB.toFixed(2);
+    }
+
+    function addHistory(item){
+      const el = document.createElement('div'); el.className='h-item';
+      el.innerHTML = `<div>${item.text}</div><div>${item.amount}</div>`;
+      historyEl.prepend(el);
+    }
+
+    document.getElementById('addCredits').addEventListener('click',()=>{ balance += 100; balanceEl.innerText = balance; showToast('+100 Play Credits') })
+
+    document.getElementById('resetBtn').addEventListener('click',()=>{
+      balance = 1000; balanceEl.innerText = balance; historyEl.innerHTML=''; resultText.innerText='Chưa có kết quả'; showToast('Đã đặt lại')
+    })
+
+    function placeBet(side){
+      if(!roundOpen){ showToast('Vòng cược đã đóng') ; return }
+      const amount = Number(document.getElementById('betAmount').value || 0);
+      if(amount <=0 || amount > balance){ showToast('Số tiền cược không hợp lệ'); return }
+      balance -= amount; balanceEl.innerText = balance;
+      const item = {text: `Cược ${side==='A'?'Nòng Nọc':'Tiến Bry'}`, amount: amount};
+      addHistory(item);
+      showToast('Cược thành công!');
+    }
+
+    document.getElementById('betA').addEventListener('click',()=>placeBet('A'))
+    document.getElementById('betB').addEventListener('click',()=>placeBet('B'))
+
+    document.getElementById('startRound').addEventListener('click',()=>{
+      // simulate random result and payout to first better found in history for demo
+      roundOpen = false; document.getElementById('timer').innerText='Đang chạy';
+      setTimeout(()=>{
+        const winner = Math.random() < 0.5 ? 'A' : 'B';
+        resultText.innerText = (winner==='A' ? 'Nòng Nọc thắng!' : 'Tiến Bry thắng!');
+
+        // simple payout: find last bet on winner and pay amount*odds
+        const items = [...historyEl.children];
+        let paid = 0;
+        for(const it of items){
+          const txt = it.firstChild.innerText;
+          const amt = Number(it.lastChild.innerText);
+          if((winner==='A' && txt.includes('Nòng Nọc')) || (winner==='B' && txt.includes('Tiến Bry'))){
+            const pay = Math.floor(amt * (winner==='A'?oddsA:oddsB));
+            balance += pay; paid += pay;
+          }
+        }
+        balanceEl.innerText = balance;
+        showToast(`Vòng kết thúc — đã trả tổng ${paid} Play Credits`);
+        roundOpen = true;
+      }, 1200);
+    })
+
+    // small timer demo
+    let seconds = 600;
+    function tick(){
+      if(seconds>0){
+        seconds--; const m = Math.floor(seconds/60), s = seconds%60; document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      }
+    }
+    setInterval(tick,1000);
+    renderOdds();
+  </script>
+</body>
+</html>
